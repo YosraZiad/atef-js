@@ -25,26 +25,44 @@ const locales = ['en', 'ar'];
 
 export default async function RootLayout({
   children,
-  params
+  params: { locale }
 }: {
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  const { locale } = await params;
-  
-  // Validate that the incoming `locale` parameter is valid
-  // if (!locales.includes(locale as any)) notFound();
+  // Validate the locale parameter
+  if (!locales.includes(locale as any)) {
+    notFound();
+  }
 
-  // Providing all messages to the client
-  // side is the easiest way to get started
-  const messages = await getMessages();
+  // Load messages for the current locale
+  let messages;
+  try {
+    messages = await getMessages({ locale });
+  } catch (error) {
+    console.error('Failed to load messages for locale:', locale, error);
+    notFound();
+  }
 
   return (
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'} suppressHydrationWarning>
+    <html 
+      lang={locale} 
+      dir={locale === 'ar' ? 'rtl' : 'ltr'} 
+      suppressHydrationWarning
+      className={locale === 'ar' ? 'rtl' : ''}
+    >
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider 
+          locale={locale}
+          messages={messages}
+          onError={(error) => console.error(error)}
+          getMessageFallback={({ namespace, key, error }) => {
+            console.warn(`Missing translation: ${namespace}.${key}`);
+            return `[${key}]`;
+          }}
+        >
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
