@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import ClientHeader from '@/components/client-header';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -57,11 +58,6 @@ export default async function RootLayout({
         <NextIntlClientProvider 
           locale={locale}
           messages={messages}
-          onError={(error) => console.error(error)}
-          getMessageFallback={({ namespace, key, error }) => {
-            console.warn(`Missing translation: ${namespace}.${key}`);
-            return `[${key}]`;
-          }}
         >
           <ThemeProvider
             attribute="class"
@@ -69,6 +65,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <ClientHeader />
             {children}
           </ThemeProvider>
         </NextIntlClientProvider>
